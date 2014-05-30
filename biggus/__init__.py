@@ -526,6 +526,55 @@ class Array(object):
                 raise TypeError('invalid index: {!r}'.format(key))
         return keys
 
+#class Transposable(object):
+#    def __init__(self, shape, value):
+#        self.shape = shape
+#        self.ndim = len(self.shape)
+#        self.value = value
+#        self._transform = range(self.ndim)
+#
+#    def transpose(self, axes=None):
+#        if axes is None:
+#            axes = self.shape[::-1]
+#        if len(axes) != len(self.shape):
+#            raise ValueError("axes don't match array")
+#
+#        self._transform = tuple([range(self.ndim)[i-1] for i in axes])
+#        self.shape = tuple([self.shape[i] for i in self._transform])
+#
+#    def _keys_transform(self, keys):
+#        transformed_keys = []
+#        for dimension in self._transform:
+#            transformed_keys.append(keys[dimension])
+#        keys = tuple(transformed_keys)
+#
+#    def __getitem__(self, keys):
+#        keys = self._keys_transform(keys)
+#        return Transposable(self.shape, self.value)
+
+class Transposable(Array):
+    def transpose(axes=None):
+        if axes is None:
+            self.shape = self.shape[::-1]
+        else:
+            if len(set(axes)) != len(axes):
+                raise ValueError("axes don't match array")
+            self.shape = tuple([x.shape[i] for i in axes])
+            self._transform = tuple([range(self.ndim)[i] for i in axes])
+
+    def _keys_transform(keys):
+        transformed_keys = []
+        for dimension in self._transform:
+            transformed_keys.append(keys[dimension])
+        keys = tuple(transformed_keys)
+
+    def __getitem__(self, keys):
+        keys = self._normalise_keys(keys)
+        keys = self._keys_transform(keys)
+
+        shape = _sliced_shape(self.shape, keys)
+        return Transposable(shape, self.value, self._dtype)
+
 
 class ConstantArray(Array):
     """
